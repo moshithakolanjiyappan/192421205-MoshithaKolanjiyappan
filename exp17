@@ -1,16 +1,30 @@
 import cv2
 import os
 
+# Create output folder
 os.makedirs("output", exist_ok=True)
 
-image=cv2.imread("image.jpg",0)
+# Read image
+image = cv2.imread("image.jpg", cv2.IMREAD_GRAYSCALE)
 
-sobelx=cv2.Sobel(image,cv2.CV_64F,1,0,ksize=3)
+if image is None:
+    print("Error: image.jpg not found!")
+    exit()
 
-cv2.imwrite("output/sobel_x.jpg",sobelx)
+# Apply Sobel X
+sobelx = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
 
-cv2.imshow("Original",image)
-cv2.imshow("Sobel X",sobelx)
+# Convert to displayable format
+sobelx = cv2.convertScaleAbs(sobelx)
+
+# Save output
+cv2.imwrite("output/sobel_x.jpg", sobelx)
+
+print("Output saved successfully!")
+
+# Display images
+cv2.imshow("Original", image)
+cv2.imshow("Sobel X", sobelx)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
