@@ -1,0 +1,28 @@
+import cv2
+import numpy as np
+import os
+
+os.makedirs("output", exist_ok=True)
+
+image = cv2.imread("image.jpg")
+
+if image is None:
+    print("Image not found!")
+    exit()
+
+rows, cols = image.shape[:2]
+
+src = np.float32([[50,50],[300,50],[50,300],[300,300]])
+dst = np.float32([[10,100],[280,40],[80,320],[320,280]])
+
+H = cv2.getPerspectiveTransform(src, dst)
+
+result = cv2.warpPerspective(image, H, (cols, rows))
+
+cv2.imwrite("output/dlt_output.jpg", result)
+
+cv2.imshow("Original", image)
+cv2.imshow("DLT Output", result)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
