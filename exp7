@@ -1,0 +1,27 @@
+import cv2
+
+# Open webcam
+cap = cv2.VideoCapture(0)
+
+# Check camera availability
+if not cap.isOpened():
+    print("Error: Cannot open webcam")
+    exit()
+
+while True:
+    # Capture frame
+    ret, frame = cap.read()
+
+    if not ret:
+        print("Error: Cannot read frame")
+        break
+
+    # Display video
+    cv2.imshow("Web Camera Video", frame)
+
+    # Press 'q' to exitwqqqq
+# Release camera
+cap.release()
+
+# Close windows
+cv2.destroyAllWindows()
