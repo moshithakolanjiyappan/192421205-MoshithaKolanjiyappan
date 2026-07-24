@@ -1,0 +1,60 @@
+import cv2
+import numpy as np
+import os
+
+os.makedirs("output", exist_ok=True)
+
+cap = cv2.VideoCapture("video.mp4")
+
+if not cap.isOpened():
+    print("Error: Cannot open video.")
+    exit()
+
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+fps = cap.get(cv2.CAP_PROP_FPS)
+
+out = cv2.VideoWriter(
+    "output/perspective_video.mp4",
+    cv2.VideoWriter_fourcc(*'mp4v'),
+    fps,
+    (width, height)
+)
+
+pts1 = np.float32([
+    [50, 50],
+    [width-50, 50],
+    [50, height-50],
+    [width-50, height-50]
+])
+
+pts2 = np.float32([
+    [20, 100],
+    [width-80, 50],
+    [80, height-30],
+    [width-20, height-80]
+])
+
+M = cv2.getPerspectiveTransform(pts1, pts2)
+
+while True:
+    ret, frame = cap.read()
+
+    if not ret:
+        break
+
+    transformed = cv2.warpPerspective(frame, M, (width, height))
+
+    out.write(transformed)
+
+    cv2.imshow("Original Video", frame)
+    cv2.imshow("Perspective Video", transformed)
+
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        break
+
+cap.release()
+out.release()
+cv2.destroyAllWindows()
+
+print("Perspective transformed video saved successfully!")
