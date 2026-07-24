@@ -1,0 +1,30 @@
+import cv2
+import os
+
+# Create output folder
+os.makedirs("output", exist_ok=True)
+
+# Read image
+image = cv2.imread("image.jpg")
+
+if image is None:
+    print("Error: image.jpg not found")
+    exit()
+
+# Resize image
+bigger = cv2.resize(image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+smaller = cv2.resize(image, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+
+# Save images
+cv2.imwrite("output/bigger_image.jpg", bigger)
+cv2.imwrite("output/smaller_image.jpg", smaller)
+
+print("Images saved successfully!")
+
+# Display images
+cv2.imshow("Original", image)
+cv2.imshow("Bigger", bigger)
+cv2.imshow("Smaller", smaller)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
