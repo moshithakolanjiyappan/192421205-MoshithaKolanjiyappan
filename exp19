@@ -1,0 +1,19 @@
+import cv2
+import os
+
+os.makedirs("output",exist_ok=True)
+
+image=cv2.imread("image.jpg",0)
+
+sobelx=cv2.Sobel(image,cv2.CV_64F,1,0,ksize=3)
+sobely=cv2.Sobel(image,cv2.CV_64F,0,1,ksize=3)
+
+sobelxy=cv2.addWeighted(sobelx,0.5,sobely,0.5,0)
+
+cv2.imwrite("output/sobel_xy.jpg",sobelxy)
+
+cv2.imshow("Original",image)
+cv2.imshow("Sobel XY",sobelxy)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
