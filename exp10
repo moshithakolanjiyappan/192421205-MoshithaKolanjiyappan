@@ -1,0 +1,39 @@
+import cv2
+import numpy as np
+import os
+
+# Create output folder
+os.makedirs("output", exist_ok=True)
+
+# Read input image
+image = cv2.imread("image.jpg")
+
+if image is None:
+    print("Error: image.jpg not found!")
+    exit()
+
+# Get image dimensions
+rows, cols = image.shape[:2]
+
+# Translation values
+tx = 100   # Move right by 100 pixels
+ty = 50    # Move down by 50 pixels
+
+# Translation matrix
+M = np.float32([[1, 0, tx],
+                [0, 1, ty]])
+
+# Apply translation
+translated = cv2.warpAffine(image, M, (cols, rows))
+
+# Save output image
+cv2.imwrite("output/moved_image.jpg", translated)
+
+print("Image moved and saved successfully!")
+
+# Display images
+cv2.imshow("Original Image", image)
+cv2.imshow("Moved Image", translated)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
