@@ -1,0 +1,50 @@
+import cv2
+import numpy as np
+import os
+
+# Create output folder
+os.makedirs("output", exist_ok=True)
+
+# Read input image
+image = cv2.imread("image.jpg")
+
+if image is None:
+    print("Error: image.jpg not found!")
+    exit()
+
+# Get image size
+rows, cols = image.shape[:2]
+
+# Source points
+pts1 = np.float32([
+    [50, 50],
+    [300, 50],
+    [50, 300],
+    [300, 300]
+])
+
+# Destination points
+pts2 = np.float32([
+    [10, 100],
+    [280, 50],
+    [80, 320],
+    [300, 300]
+])
+
+# Perspective transformation matrix
+M = cv2.getPerspectiveTransform(pts1, pts2)
+
+# Apply transformation
+perspective = cv2.warpPerspective(image, M, (cols, rows))
+
+# Save output
+cv2.imwrite("output/perspective_image.jpg", perspective)
+
+print("Perspective transformation completed successfully!")
+
+# Display images
+cv2.imshow("Original Image", image)
+cv2.imshow("Perspective Transformed Image", perspective)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
