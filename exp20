@@ -1,0 +1,21 @@
+import cv2
+import numpy as np
+import os
+
+os.makedirs("output",exist_ok=True)
+
+image=cv2.imread("image.jpg")
+
+kernel=np.array([[0,-1,0],
+                 [-1,5,-1],
+                 [0,-1,0]])
+
+sharp=cv2.filter2D(image,-1,kernel)
+
+cv2.imwrite("output/sharpen.jpg",sharp)
+
+cv2.imshow("Original",image)
+cv2.imshow("Sharpened",sharp)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
