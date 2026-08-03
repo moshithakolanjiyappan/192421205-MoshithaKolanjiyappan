@@ -1,50 +1,62 @@
+# perspective_transform.py
+
 import cv2
 import numpy as np
-import os
-
-# Create output folder
-os.makedirs("output", exist_ok=True)
 
 # Read input image
 image = cv2.imread("image.jpg")
 
 if image is None:
-    print("Error: image.jpg not found!")
+    print("Error: Cannot load image")
     exit()
 
 # Get image size
-rows, cols = image.shape[:2]
+height, width = image.shape[:2]
 
-# Source points
-pts1 = np.float32([
-    [50, 50],
-    [300, 50],
-    [50, 300],
-    [300, 300]
+# Display original image
+cv2.imshow("Original Image", image)
+
+# Select four points from the image
+# Change these coordinates according to your image
+
+source_points = np.float32([
+    [50, 50],                 # Top Left
+    [width-50, 50],           # Top Right
+    [width-50, height-50],    # Bottom Right
+    [50, height-50]           # Bottom Left
 ])
 
-# Destination points
-pts2 = np.float32([
-    [10, 100],
-    [280, 50],
-    [80, 320],
-    [300, 300]
+# Destination points (desired output rectangle)
+
+destination_points = np.float32([
+    [0, 0],
+    [width, 0],
+    [width, height],
+    [0, height]
 ])
 
-# Perspective transformation matrix
-M = cv2.getPerspectiveTransform(pts1, pts2)
+# Calculate perspective transformation matrix
+transform_matrix = cv2.getPerspectiveTransform(
+    source_points,
+    destination_points
+)
 
-# Apply transformation
-perspective = cv2.warpPerspective(image, M, (cols, rows))
+# Apply perspective transformation
+transformed_image = cv2.warpPerspective(
+    image,
+    transform_matrix,
+    (width, height)
+)
+
+# Display result
+cv2.imshow("Perspective Transformed Image", transformed_image)
 
 # Save output
-cv2.imwrite("output/perspective_image.jpg", perspective)
+cv2.imwrite("perspective_output.jpg", transformed_image)
 
-print("Perspective transformation completed successfully!")
+print("Perspective Transformation Completed")
+print("Output saved as perspective_output.jpg")
 
-# Display images
-cv2.imshow("Original Image", image)
-cv2.imshow("Perspective Transformed Image", perspective)
-
+# Wait and close windows
 cv2.waitKey(0)
 cv2.destroyAllWindows()
