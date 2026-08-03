@@ -1,50 +1,48 @@
 import cv2
 import numpy as np
-import os
 
-# Create output folder
-os.makedirs("output", exist_ok=True)
+# Step 1: Read input image
+img = cv2.imread("image.jpg")
 
-# Read input image
-image = cv2.imread("image.jpg")
-
-if image is None:
-    print("Error: image.jpg not found!")
+if img is None:
+    print("Image not found")
     exit()
 
-# Get image size
-rows, cols = image.shape[:2]
+# Get image dimensions
+height, width = img.shape[:2]
 
-# Source points
-src_pts = np.float32([
-    [50, 50],
-    [300, 50],
-    [50, 300],
-    [300, 300]
+# Step 2: Define four source points
+# (Change these points according to your image)
+src_points = np.float32([
+    [0, 0],                 # Top-left
+    [width-1, 0],           # Top-right
+    [0, height-1],          # Bottom-left
+    [width-1, height-1]     # Bottom-right
 ])
 
-# Destination points
-dst_pts = np.float32([
-    [30, 80],
-    [280, 40],
-    [80, 320],
-    [320, 280]
+# Step 3: Define destination points
+dst_points = np.float32([
+    [100, 50],
+    [width-100, 0],
+    [0, height-50],
+    [width, height]
 ])
 
-# Compute Homography Matrix
-H, status = cv2.findHomography(src_pts, dst_pts)
+# Step 4: Calculate Homography Matrix
+H, status = cv2.findHomography(src_points, dst_points)
 
-# Apply Homography Transformation
-transformed = cv2.warpPerspective(image, H, (cols, rows))
+print("Homography Matrix:")
+print(H)
 
-# Save output image
-cv2.imwrite("output/homography_output.jpg", transformed)
+# Step 5: Apply perspective transformation
+result = cv2.warpPerspective(img, H, (width, height))
 
-print("Homography transformation completed successfully!")
+# Step 6: Display images
+cv2.imshow("Original Image", img)
+cv2.imshow("Homography Transformation", result)
 
-# Display images
-cv2.imshow("Original Image", image)
-cv2.imshow("Homography Transformed Image", transformed)
+# Save output
+cv2.imwrite("homography_output.jpg", result)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
