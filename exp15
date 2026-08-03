@@ -1,28 +1,89 @@
 import cv2
 import numpy as np
-import os
 
-os.makedirs("output", exist_ok=True)
+# Read input image
+img = cv2.imread("image.jpg")
 
-image = cv2.imread("image.jpg")
-
-if image is None:
-    print("Image not found!")
+# Check image loading
+if img is None:
+    print("Image not found")
     exit()
 
-rows, cols = image.shape[:2]
+# Get image size
+height, width = img.shape[:2]
 
-src = np.float32([[50,50],[300,50],[50,300],[300,300]])
-dst = np.float32([[10,100],[280,40],[80,320],[320,280]])
+# Source points (points selected from original image)
+src_points = np.float32([
+    [50, 50],
+    [width-50, 50],
+    [50, height-50],
+    [width-50, height-50]
+])
 
-H = cv2.getPerspectiveTransform(src, dst)
+# Destination points (new transformed position)
+dst_points = np.float32([
+    [100, 80],
+    [width-100, 50],
+    [80, height-100],
+    [width-80, height-50]
+])
 
-result = cv2.warpPerspective(image, H, (cols, rows))
+# Create DLT matrix
+A = []
 
-cv2.imwrite("output/dlt_output.jpg", result)
+for i in range(4):
+    x, y = src_points[i]
+    u, v = dst_points[i]
 
-cv2.imshow("Original", image)
-cv2.imshow("DLT Output", result)
+    A.append([
+        -x, -y, -1,
+        0, 0, 0,
+        x*u, y*u, u
+    ])
+
+    A.append([
+        0, 0, 0,
+        -x, -y, -1,
+        x*v, y*v, v
+    ])
+
+A = np.array(A)
+
+# Solve using SVD
+U, S, V = np.linalg.svd(A)
+
+# Homography matrix
+H = V[-1].reshape(3, 3)
+
+# Normalize matrix
+H = H / H[2, 2]
+
+print("Homography Matrix:")
+print(H)
+
+# Apply DLT transformation
+transformed_image = cv2.warpPerspective(
+    img,
+    H,
+    (width, height)
+)
+
+# Display output
+cv2.imshow("Original Image", img)
+
+cv2.imshow(
+    "DLT Transformed Image",
+    transformed_image
+)
+
+# Save result
+cv2.imwrite(
+    "dlt_output.jpg",
+    transformed_image
+)
+
+print("Transformation completed successfully")
+print("Output saved as dlt_output.jpg")
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
