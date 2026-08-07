@@ -1,0 +1,30 @@
+import cv2
+import numpy as np
+
+print("Program Started")
+
+# Read input image
+img = cv2.imread("image.jpg")
+
+if img is None:
+    print("Error: image.jpg not found!")
+    exit()
+
+# Laplacian mask with positive center coefficient
+kernel = np.array([
+    [1, 1, 1],
+    [1,-8, 1],
+    [1, 1, 1]
+], dtype=np.float32)
+
+# Apply Laplacian filter
+lap = cv2.filter2D(img, -1, kernel)
+
+# Sharpen image
+sharp = cv2.subtract(img, lap)
+
+# Save output
+cv2.imwrite("output.jpg", sharp)
+
+print("Image processed successfully!")
+print("Output saved as output.jpg")
