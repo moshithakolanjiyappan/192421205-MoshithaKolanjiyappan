@@ -1,0 +1,30 @@
+import cv2
+
+print("Program Started")
+
+# Read input image
+img = cv2.imread("image.jpg")
+
+if img is None:
+    print("Error: image.jpg not found!")
+    exit()
+
+# Apply strong Gaussian Blur
+blur = cv2.GaussianBlur(img, (11, 11), 5)
+
+# Strong Unsharp Masking
+sharp = cv2.addWeighted(img, 3.0, blur, -2.0, 0)
+
+# Display images
+cv2.imshow("Original Image", img)
+cv2.imshow("Blurred Image", blur)
+cv2.imshow("Sharpened Image", sharp)
+
+# Save output image
+cv2.imwrite("output.jpg", sharp)
+
+print("Image processed successfully!")
+print("Output saved as output.jpg")
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
