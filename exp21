@@ -1,0 +1,26 @@
+import cv2
+import numpy as np
+
+print("Program started")
+
+img = cv2.imread("image.jpg")
+
+if img is None:
+    print("Error: image.jpg not found!")
+    exit()
+
+print("Image loaded successfully")
+
+kernel = np.array([
+    [-1,-1,-1],
+    [-1, 8,-1],
+    [-1,-1,-1]
+], dtype=np.float32)
+
+lap = cv2.filter2D(img, -1, kernel)
+sharp = cv2.add(img, lap)
+
+cv2.imwrite("output.jpg", sharp)
+
+print("Output saved as output.jpg")
+print("Program finished")
