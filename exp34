@@ -1,0 +1,26 @@
+import cv2
+import numpy as np
+
+image = cv2.imread("input.jpg")
+
+if image is None:
+    print("Error: input.jpg not found")
+    exit()
+
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+kernel = np.ones((5, 5), np.uint8)
+
+top_hat = cv2.morphologyEx(
+    gray,
+    cv2.MORPH_TOPHAT,
+    kernel
+)
+
+cv2.imshow("Original Image", image)
+cv2.imshow("Top Hat", top_hat)
+
+cv2.imwrite("top_hat_output.jpg", top_hat)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
