@@ -1,0 +1,199 @@
+```python
+import cv2
+import numpy as np
+import os
+
+# ============================================================
+# OPENING THE INPUT IMAGE
+# ============================================================
+
+image_path = "input.jpg"
+
+# Check whether image exists
+if not os.path.exists(image_path):
+    print("ERROR: input.jpg not found!")
+    print("Please place input.jpg inside the same folder as this Python file.")
+    exit()
+
+# Read image
+image = cv2.imread(image_path)
+
+if image is None:
+    print("ERROR: Could not read the image.")
+    exit()
+
+print("Image loaded successfully.")
+
+
+# ============================================================
+# 1. FIND IMAGE BOUNDARY USING CONVOLUTION KERNEL
+# ============================================================
+
+# Convert image to grayscale
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Sobel kernels for detecting horizontal and vertical edges
+kernel_x = np.array([
+    [-1, 0, 1],
+    [-2, 0, 2],
+    [-1, 0, 1]
+], dtype=np.float32)
+
+kernel_y = np.array([
+    [-1, -2, -1],
+    [ 0,  0,  0],
+    [ 1,  2,  1]
+], dtype=np.float32)
+
+# Apply convolution
+boundary_x = cv2.filter2D(gray, -1, kernel_x)
+boundary_y = cv2.filter2D(gray, -1, kernel_y)
+
+# Convert to absolute values
+boundary_x = cv2.convertScaleAbs(boundary_x)
+boundary_y = cv2.convertScaleAbs(boundary_y)
+
+# Combine horizontal and vertical boundaries
+boundary = cv2.addWeighted(
+    boundary_x, 0.5,
+    boundary_y, 0.5,
+    0
+)
+
+cv2.imwrite("1_boundary.jpg", boundary)
+
+print("1. Boundary detection completed.")
+
+
+# ============================================================
+# CREATE BINARY IMAGE FOR MORPHOLOGICAL OPERATIONS
+# ============================================================
+
+# Threshold the grayscale image
+_, binary = cv2.threshold(
+    gray,
+    127,
+    255,
+    cv2.THRESH_BINARY
+)
+
+cv2.imwrite("2_binary.jpg", binary)
+
+
+# ============================================================
+# STRUCTURING ELEMENT
+# ============================================================
+
+kernel = np.ones((5, 5), np.uint8)
+
+
+# ============================================================
+# 2. EROSION
+# ============================================================
+
+erosion = cv2.erode(
+    binary,
+    kernel,
+    iterations=1
+)
+
+cv2.imwrite("3_erosion.jpg", erosion)
+
+print("2. Erosion completed.")
+
+
+# ============================================================
+# 3. DILATION
+# ============================================================
+
+dilation = cv2.dilate(
+    binary,
+    kernel,
+    iterations=1
+)
+
+cv2.imwrite("4_dilation.jpg", dilation)
+
+print("3. Dilation completed.")
+
+
+# ============================================================
+# 4. OPENING
+# Opening = Erosion followed by Dilation
+# ============================================================
+
+opening = cv2.morphologyEx(
+    binary,
+    cv2.MORPH_OPEN,
+    kernel
+)
+
+cv2.imwrite("5_opening.jpg", opening)
+
+print("4. Opening completed.")
+
+
+# ============================================================
+# 5. CLOSING
+# Closing = Dilation followed by Erosion
+# ============================================================
+
+closing = cv2.morphologyEx(
+    binary,
+    cv2.MORPH_CLOSE,
+    kernel
+)
+
+cv2.imwrite("6_closing.jpg", closing)
+
+print("5. Closing completed.")
+
+
+# ============================================================
+# 6. MORPHOLOGICAL GRADIENT
+# Gradient = Dilation - Erosion
+# ============================================================
+
+gradient = cv2.morphologyEx(
+    binary,
+    cv2.MORPH_GRADIENT,
+    kernel
+)
+
+cv2.imwrite("7_morphological_gradient.jpg", gradient)
+
+print("6. Morphological Gradient completed.")
+
+
+# ============================================================
+# DISPLAY ALL RESULTS
+# ============================================================
+
+cv2.imshow("Original Image", image)
+cv2.imshow("Boundary Detection", boundary)
+cv2.imshow("Binary Image", binary)
+cv2.imshow("Erosion", erosion)
+cv2.imshow("Dilation", dilation)
+cv2.imshow("Opening", opening)
+cv2.imshow("Closing", closing)
+cv2.imshow("Morphological Gradient", gradient)
+
+print()
+print("==========================================")
+print("ALL OPERATIONS COMPLETED SUCCESSFULLY")
+print("==========================================")
+print()
+print("Output files:")
+print("1_boundary.jpg")
+print("2_binary.jpg")
+print("3_erosion.jpg")
+print("4_dilation.jpg")
+print("5_opening.jpg")
+print("6_closing.jpg")
+print("7_morphological_gradient.jpg")
+print()
+print("Press any key on an image window to close.")
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+```
