@@ -1,0 +1,65 @@
+import cv2
+
+image = cv2.imread("input.jpg")
+
+if image is None:
+    print("Error: input.jpg not found")
+    exit()
+
+# Select object using mouse
+print("Select the object using the mouse.")
+print("Press ENTER after selecting.")
+
+roi = cv2.selectROI(
+    "Select Object",
+    image,
+    fromCenter=False,
+    showCrosshair=True
+)
+
+x, y, w, h = roi
+
+# Extract selected object
+object_image = image[
+    y:y + h,
+    x:x + w
+]
+
+# Draw rectangle
+result = image.copy()
+
+cv2.rectangle(
+    result,
+    (x, y),
+    (x + w, y + h),
+    (0, 255, 0),
+    3
+)
+
+# Display
+cv2.imshow(
+    "Selected Object",
+    result
+)
+
+cv2.imshow(
+    "Extracted Object",
+    object_image
+)
+
+# Save
+cv2.imwrite(
+    "object_extracted.jpg",
+    object_image
+)
+
+cv2.imwrite(
+    "rectangle_output.jpg",
+    result
+)
+
+print("Object extracted successfully.")
+print("Saved as object_extracted.jpg")
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
