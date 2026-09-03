@@ -1,0 +1,183 @@
+import cv2 
+import numpy as np 
+import os 
+IMAGE_SIZE = 640 
+DEFECT_THRESHOLD = 0.008 
+os.makedirs("results", exist_ok=True) 
+def inspect_banana(image, x1, x2, number): 
+ roi = image[:, x1:x2] 
+ hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV) 
+ mask = cv2.inRange( 
+ hsv, 
+ np.array([0, 35, 30]), 
+ np.array([179, 255, 255]) 
+ )
+ kernel = np.ones((5, 5), np.uint8) 
+ mask = cv2.morphologyEx( 
+ mask, 
+ cv2.MORPH_OPEN, 
+ kernel 
+ ) 
+ mask = cv2.morphologyEx( 
+ mask, 
+ cv2.MORPH_CLOSE, 
+ kernel 
+ ) 
+ contours, _ = cv2.findContours(  mask, 
+ cv2.RETR_EXTERNAL, 
+ cv2.CHAIN_APPROX_SIMPLE  ) 
+ if not contours: 
+ return image, "NOT DETECTED", 0 
+ contour = max( 
+ contours, 
+ key=cv2.contourArea 
+ ) 
+ area = cv2.contourArea(contour) 
+ if area < 1000: 
+ return image, "NOT DETECTED", 0
+ bx, by, bw, bh = cv2.boundingRect(contour) 
+ banana_mask = np.zeros( 
+ mask.shape, 
+ dtype=np.uint8 
+ ) 
+ cv2.drawContours( 
+ banana_mask, 
+ [contour], 
+ -1, 
+ 255, 
+ -1 
+ ) 
+ gray = cv2.cvtColor( 
+ roi, 
+ cv2.COLOR_BGR2GRAY 
+ ) 
+ dark = cv2.inRange( 
+ gray, 
+ 0, 
+ 85 
+ ) 
+ saturated = cv2.inRange( 
+ hsv, 
+ np.array([0, 40, 0]), 
+ np.array([179, 255, 255]) 
+ ) 
+ defect_mask = cv2.bitwise_and( 
+ dark, 
+ saturated
+ ) 
+ defect_mask = cv2.bitwise_and( 
+ defect_mask, 
+ banana_mask 
+ ) 
+ defect_mask = cv2.morphologyEx(  defect_mask, 
+ cv2.MORPH_OPEN, 
+ np.ones((3, 3), np.uint8) 
+ ) 
+ banana_area = cv2.countNonZero(  banana_mask 
+ ) 
+ defect_area = cv2.countNonZero(  defect_mask 
+ ) 
+ if banana_area > 0: 
+ defect_ratio = defect_area / banana_area  else: 
+ defect_ratio = 0 
+ if defect_ratio >= DEFECT_THRESHOLD:  quality = "DEFECTIVE" 
+ box_color = (0, 0, 255) 
+ else: 
+ quality = "HEALTHY" 
+ box_color = (0, 180, 0) 
+ x = x1 + b 
+ y = by 
+ cv2.rectangle( 
+ image, 
+ (x, y), 
+ (x + bw, y + bh), 
+ box_color,
+ 3 
+ ) 
+ label = f"Banana {number}: {quality}"  label_width = min( 
+ max(bw, 200), 
+ 300 
+ ) 
+ label_y = max(0, y - 35) 
+ cv2.rectangle( 
+ image, 
+ (x, label_y), 
+ (x + label_width, y), 
+ box_color, 
+ -1 
+ ) 
+ cv2.putText( 
+ image, 
+ label, 
+ (x + 5, max(23, y - 10)), 
+ cv2.FONT_HERSHEY_SIMPLEX,  0.5, 
+ (255, 255, 255), 
+ 2 
+ ) 
+ cv2.putText( 
+ image, 
+ f"Defect: {defect_ratio * 100:.2f}%",  (x, y + bh + 22), 
+ cv2.FONT_HERSHEY_SIMPLEX,  0.5, 
+ box_color, 
+ 2 
+ )
+ return image, quality, defect_ratio def main(): 
+ image = cv2.imread("input.jpg")  if image is None: 
+ print("ERROR: input.jpg not found")  return 
+ image = cv2.resize( 
+ image, 
+ (IMAGE_SIZE, IMAGE_SIZE)  ) 
+ output = image.copy() 
+ banana_regions = [ 
+ (20, 140), 
+ (105, 215), 
+ (195, 300), 
+ (285, 390), 
+ (375, 480), 
+ (465, 585) 
+ ] 
+ results = [] 
+ for i, (x1, x2) in enumerate( 
+ banana_regions, 
+ start=1 
+ ): 
+ output, quality, ratio = inspect_banana(  output, 
+ x1, 
+ x2, 
+ i 
+ ) 
+ results.append( 
+ (i, quality, ratio)
+ ) 
+ cv2.rectangle( 
+ output, 
+ (0, 0), 
+ (640, 65), 
+ (255, 255, 255), 
+ -1 
+ ) 
+ cv2.putText( 
+ output, 
+ "BANANA QUALITY INSPECTION",  (15, 32), 
+ cv2.FONT_HERSHEY_SIMPLEX,  0.7, 
+ (0, 0, 0), 
+ 2 
+ ) 
+ output_file = "results/banana_quality_result.jpg" 
+ cv2.imwrite( 
+ output_file, 
+ output 
+ ) 
+ print("\nBANANA QUALITY RESULTS")  print("======================")  for number, quality, ratio in results: 
+ print( 
+ f"Banana {number}: {quality} "  f"| Defect: {ratio * 100:.2f}%" 
+ ) 
+ print("======================")  print(f"Saved: {output_file}")
+ cv2.imshow( 
+ "Banana Quality Inspection", 
+ output 
+ ) 
+ cv2.waitKey(0) 
+ cv2.destroyAllWindows() 
+if __name__ == "__main__": 
+ main() 
